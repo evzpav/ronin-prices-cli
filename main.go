@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/evzpav/ronin-prices-cli/prices"
 )
 
 func main() {
 
-	p := prices.NewClient("token")
+	p := prices.NewClient(os.Getenv("TOKEN"))
 
 	currencyFullResp := p.GetCurrency("BTC", "TUSD")
 	fmt.Printf("currency: %+v \n", currencyFullResp)
