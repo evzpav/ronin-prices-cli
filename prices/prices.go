@@ -20,6 +20,7 @@ func NewClient(token string) *PricesInput {
 		HTTPClient: &http.Client{
 			Timeout: setSecondsDuration(defaultTimeout),
 		},
+		APIEndpoint: "http://prices.stratum.bt",
 	}
 }
 
@@ -38,10 +39,15 @@ func (p *PricesInput) ChangeTimeout(newTimeout int) {
 	p.HTTPClient.Timeout = setSecondsDuration(newTimeout)
 }
 
+//SetAPIEndpoint set new url
+func (p *PricesInput) SetAPIEndpoint(url string) {
+	p.APIEndpoint = url
+}
+
 //GetCurrencyConvertData reusable function
 func (p *PricesInput) GetCurrencyConvertData(uri, symbol, convert string) (RoninPricesResp, error) {
-	url := fmt.Sprintf("%s/%s?symbol=%s&convert=%s&source=%s", "http://prices.stratum.bt", uri, symbol, convert, p.Source)
-	body, err := p.GetRequest(url, p.APIToken)
+	url := fmt.Sprintf("%s/%s?symbol=%s&convert=%s&source=%s", p.APIEndpoint, uri, symbol, convert, p.Source)
+	body, err := GetRequest(p.HTTPClient, url, p.APIToken)
 	if err != nil {
 		log.Printf("Could not make request: %s", err.Error())
 		return RoninPricesResp{}, err
@@ -104,11 +110,11 @@ func (p *PricesInput) GetCurrenciesQuotes(symbol, convert string) ([]Quote, erro
 	return quotes[0].Quotes, nil
 }
 
-//GetRequest general get request
-func (p *PricesInput) GetRequest(url, token string) ([]byte, error) {
+//GetRequest general get request with x-token on header
+func GetRequest(httpClient *http.Client, url, token string) ([]byte, error) {
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("x-token", token)
-	resp, err := p.HTTPClient.Do(req)
+	resp, err := httpClient.Do(req)
 
 	if err != nil {
 		return nil, err

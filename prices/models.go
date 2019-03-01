@@ -6,6 +6,7 @@ type PricesInput struct {
 	Source     string
 	APIToken   string
 	HTTPClient *http.Client
+	APIEndpoint     string
 }
 
 type RoninPricesResp []CurrencyConvert
