@@ -39,62 +39,87 @@ func (p *PricesInput) ChangeTimeout(newTimeout int) {
 }
 
 //GetCurrencyConvertData reusable function
-func (p *PricesInput) GetCurrencyConvertData(uri, symbol, convert string) RoninPricesResp {
+func (p *PricesInput) GetCurrencyConvertData(uri, symbol, convert string) (RoninPricesResp, error) {
 	url := fmt.Sprintf("%s/%s?symbol=%s&convert=%s&source=%s", "http://prices.stratum.bt", uri, symbol, convert, p.Source)
-	body := p.GetRequest(url, p.APIToken)
-
+	body, err := p.GetRequest(url, p.APIToken)
+	if err != nil {
+		log.Printf("Could not make request: %s", err.Error())
+		return RoninPricesResp{}, err
+	}
 	var resp RoninPricesResp
 	if err := json.Unmarshal(body, &resp); err != nil {
 		log.Printf("Error unmarshal: %s", err.Error())
+		return RoninPricesResp{}, err
 	}
-	return resp
+	return resp, nil
 }
 
 //GetCurrency get currency full return
-func (p *PricesInput) GetCurrency(symbol, convert string) RoninPricesResp {
-	return p.GetCurrencyConvertData("currency", symbol, convert)
+func (p *PricesInput) GetCurrency(symbol, convert string) (RoninPricesResp, error) {
+	resp, err := p.GetCurrencyConvertData("currency", symbol, convert)
+	if err != nil {
+		return RoninPricesResp{}, err
+	}
+	return resp, nil
 }
 
 //GetCurrencies get currencies full return
-func (p *PricesInput) GetCurrencies(symbols, converts string) RoninPricesResp {
-	return p.GetCurrencyConvertData("currencies", symbols, converts)
+func (p *PricesInput) GetCurrencies(symbols, converts string) (RoninPricesResp, error) {
+	resp, err := p.GetCurrencyConvertData("currencies", symbols, converts)
+	if err != nil {
+		return RoninPricesResp{}, err
+	}
+	return resp, nil
 }
 
 //GetCurrencyPrice get price in string format
-func (p *PricesInput) GetCurrencyPrice(symbol, convert string) string {
-	return p.GetCurrency(symbol, convert)[0].Quotes[0].Price
+func (p *PricesInput) GetCurrencyPrice(symbol, convert string) (string, error) {
+	resp, err := p.GetCurrency(symbol, convert)
+	if err != nil {
+		return "", err
+	}
+	return resp[0].Quotes[0].Price, nil
 }
 
 //GetCurrencyPriceFloat64 get price formated to float64
-func (p *PricesInput) GetCurrencyPriceFloat64(symbol, convert string) float64 {
-	priceFloat, err := strconv.ParseFloat(p.GetCurrency(symbol, convert)[0].Quotes[0].Price, 64)
+func (p *PricesInput) GetCurrencyPriceFloat64(symbol, convert string) (float64, error) {
+	priceString, err := p.GetCurrencyPrice(symbol, convert)
+	if err != nil {
+		return float64(0), err
+	}
+	priceFloat, err := strconv.ParseFloat(priceString, 64)
 	if err != nil {
 		log.Printf("Error on price parse: %s", err.Error())
+		return float64(0), err
 	}
-	return priceFloat
+	return priceFloat, nil
 }
 
 //GetCurrenciesQuotes get quotes objects with muiltple coins
-func (p *PricesInput) GetCurrenciesQuotes(symbol, convert string) []Quote {
-	return p.GetCurrencies(symbol, convert)[0].Quotes
+func (p *PricesInput) GetCurrenciesQuotes(symbol, convert string) ([]Quote, error) {
+	quotes, err := p.GetCurrencies(symbol, convert)
+	if err != nil {
+		return []Quote{}, err
+	}
+	return quotes[0].Quotes, nil
 }
 
 //GetRequest general get request
-func (p *PricesInput) GetRequest(url, token string) []byte {
+func (p *PricesInput) GetRequest(url, token string) ([]byte, error) {
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("x-token", token)
 	resp, err := p.HTTPClient.Do(req)
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return body
+	return body, nil
 }
 
 func setSecondsDuration(seconds int) time.Duration {
