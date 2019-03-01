@@ -12,27 +12,29 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/evzpav/ronin-prices-cli/prices"
 )
 
 func main() {
 
-	p := prices.NewClient("token")
+	p := prices.NewClient(os.Getenv("TOKEN"))
 
-	currencyFullResp := p.GetCurrency("BTC", "TUSD")
+	currencyFullResp, _ := p.GetCurrency("BTC", "TUSD")
 	fmt.Printf("currency: %+v \n", currencyFullResp)
 
-	ethBtcPrice := p.GetCurrencyPrice("ETH", "BTC")
+	ethBtcPrice, _ := p.GetCurrencyPrice("ETH", "BTC")
 	fmt.Printf("ETH/BTC price: %s \n", ethBtcPrice)
 
-	ethBtcPriceFloat := p.GetCurrencyPriceFloat64("ETH", "BTC")
+	ethBtcPriceFloat, _ := p.GetCurrencyPriceFloat64("ETH", "BTC")
 	fmt.Printf("ETH/BTC price: %.8f \n", ethBtcPriceFloat)
 
-	currenciesFullResp := p.GetCurrencies("BTC,ETH", "BRL,TUSD")
+	currenciesFullResp, _ := p.GetCurrencies("BTC,ETH", "BRL,TUSD")
 	fmt.Printf("currencies: %+v \n", currenciesFullResp)
 
-	quotesArray := p.GetCurrenciesQuotes("BTC,ETH", "BRL,TUSD")
+	quotesArray, _ := p.GetCurrenciesQuotes("BTC,ETH", "BRL,TUSD")
 	fmt.Printf("quotesArray: %+v \n", quotesArray)
 }
+
 ```
