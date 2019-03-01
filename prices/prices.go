@@ -38,7 +38,7 @@ func (c *PricesInput) ChangeTimeout(newTimeout int) {
 	c.HTTPClient.Timeout = setSecondsDuration(newTimeout)
 }
 
-func (c *PricesInput) getCurrencyConvertData(uri, symbol, convert string) RoninPricesResp {
+func (c *PricesInput) GetCurrencyConvertData(uri, symbol, convert string) RoninPricesResp {
 	url := fmt.Sprintf("%s/%s?symbol=%s&convert=%s&source=%s", "http://prices.stratum.bt", uri, symbol, convert, c.Source)
 	body := c.getRequest(url, c.APIToken)
 
@@ -51,12 +51,12 @@ func (c *PricesInput) getCurrencyConvertData(uri, symbol, convert string) RoninP
 
 //GetCurrency get currency full return
 func (c *PricesInput) GetCurrency(symbol, convert string) RoninPricesResp {
-	return c.getCurrencyConvertData("currency", symbol, convert)
+	return c.GetCurrencyConvertData("currency", symbol, convert)
 }
 
 //GetCurrencies get currencies full return
 func (c *PricesInput) GetCurrencies(symbols, converts string) RoninPricesResp {
-	return c.getCurrencyConvertData("currencies", symbols, converts)
+	return c.GetCurrencyConvertData("currencies", symbols, converts)
 }
 
 //GetCurrencyPrice get price in string format
