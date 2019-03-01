@@ -1,8 +1,11 @@
 package prices
 
+import "net/http"
+
 type PricesInput struct {
-	Source string
-	APIToken string
+	Source     string
+	APIToken   string
+	HTTPClient *http.Client
 }
 
 type RoninPricesResp []CurrencyConvert
