@@ -2,6 +2,7 @@ package prices
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -125,6 +126,16 @@ func GetRequest(httpClient *http.Client, url, token string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if resp.StatusCode != 200 {
+		errorMsg := ErrorMessage{}
+		err := json.Unmarshal(body, &errorMsg)
+		if err != nil {
+			return body, errors.New("Error status")
+		}
+		return body, errors.New(errorMsg.Message)
+	}
+
 	return body, nil
 }
 
